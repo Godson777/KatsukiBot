@@ -1,23 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <FileUpgradeFlags>40</FileUpgradeFlags>
-    <UpgradeBackupLocation>C:\Users\Yeshu\Documents\Visual Studio 2019\Projects\KatsukiBot\Backup2\</UpgradeBackupLocation>
-    <OldToolsVersion>Current</OldToolsVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
+  
   <ItemGroup>
-    <Content Include="Resource\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+	<Content Include="Resource\**">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00921" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00921" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00921" />
     <PackageReference Include="RethinkDb.Driver" Version="2.4.0-beta-1" />
   </ItemGroup>
+  
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+
 </Project>

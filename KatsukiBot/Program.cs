@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RethinkDb.Driver;
 using RethinkDb.Driver.Net;
 using KatsukiBot.Utils;
+using DSharpPlus.Entities;
 
 namespace KatsukiBot {
     class Program { 
@@ -87,6 +88,23 @@ namespace KatsukiBot {
             //    R.TableCreate("Polls").OptArg("primary_key", "Channel ID");
             //}
             Console.WriteLine("[RethinkDB] Tables verified!");
+        }
+
+        /// <summary>
+        /// This method searches for a message, specified with its ID.
+        /// This method is also sharding safe, as it loops through each shard until the message has been successfully found.
+        /// </summary>
+        /// <param name="cID">The channel ID in which to find the message.</param>
+        /// <param name="mID">The message ID used to find the message object.</param>
+        /// <returns></returns>
+        public async static Task<DiscordMessage> FindMessageWithKatsuki(ulong cID, ulong mID) { 
+            foreach (Katsuki Kat in Shards.Values) {
+                var ch = await Kat.Discord.GetChannelAsync(cID);
+                if (ch == null) continue;
+                var msg = await ch.GetMessageAsync(mID);
+                return msg;
+            }
+            return null;
         }
     }
 }

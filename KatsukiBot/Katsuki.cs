@@ -54,6 +54,18 @@ namespace KatsukiBot {
 
                 MinimumLogLevel = LogLevel.Debug
             });
+
+            CommandsNext = Discord.UseCommandsNext(new CommandsNextConfiguration {
+                CaseSensitive = false,
+                IgnoreExtraArguments = true,
+
+                EnableMentionPrefix = true,
+                StringPrefixes = new string[] { "k!" },
+
+                EnableDefaultHelp = false
+            });
+
+            CommandsNext.RegisterCommands<TestCommands>();
         }
 
         public async Task StartAsync() {
