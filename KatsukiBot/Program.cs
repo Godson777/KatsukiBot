@@ -83,10 +83,10 @@ namespace KatsukiBot {
                 Console.WriteLine("[RethinkDB] \"Settings\" table was not found, so it is being made.");
                 R.TableCreate("Settings").OptArg("primary_key", "Guild ID").Run(Conn);
             }
-            //if (!R.TableList().Contains("Polls").Run<bool>(Conn)) {
-            //    Console.WriteLine("[RethinkDB] \"Polls\" table was not found, so it is being made.");
-            //    R.TableCreate("Polls").OptArg("primary_key", "Channel ID");
-            //}
+            if (!R.TableList().Contains("Polls").Run<bool>(Conn)) {
+                Console.WriteLine("[RethinkDB] \"Polls\" table was not found, so it is being made.");
+                R.TableCreate("Polls").OptArg("primary_key", "Guild ID");
+            }
             Console.WriteLine("[RethinkDB] Tables verified!");
         }
 
