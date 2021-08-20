@@ -2,15 +2,19 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.SlashCommands;
+using KatsukiBot.Commands;
+using KatsukiBot.Commands.Discord;
 using KatsukiBot.Managers;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace KatsukiBot { 
-    class Katsuki {
+    class KatsukiDiscord {
         private const string Name = "Katsuki";
         private const string Version = "1.0";
 
@@ -30,6 +34,11 @@ namespace KatsukiBot {
         public CommandsNextExtension CommandsNext { get; }
 
         /// <summary>
+        /// Gets the Slash Commands instance.
+        /// </summary>
+        public SlashCommandsExtension SlashCommands { get; }
+
+        /// <summary>
         /// Gets the Interactivity instnace.
         /// </summary>
         public InteractivityExtension Interactivity { get; }
@@ -39,7 +48,7 @@ namespace KatsukiBot {
         /// </summary>
         public int ShardID { get; }
 
-        public Katsuki(Config config, int shardID) {
+        public KatsukiDiscord(Config config, int shardID) {
             ShardID = shardID;
 
             Discord = new DiscordClient(new DiscordConfiguration() {
@@ -69,6 +78,9 @@ namespace KatsukiBot {
 
             CommandsNext.RegisterCommands<TestCommands>();
             CommandsNext.CommandErrored += HandleError;
+            SlashCommands = Discord.UseSlashCommands();
+            SlashCommands.RegisterCommands<SlashCommands>(441499112899084288l);
+            SlashCommands.RegisterCommands<GeneralCommands>(441499112899084288l);
             Discord.ComponentInteractionCreated += HandlePoll;
         }
 
@@ -106,7 +118,7 @@ namespace KatsukiBot {
         }
 
         public async Task StartAsync() {
-            Discord.Logger.Log(LogLevel.Information, $"[{LOGTAG}-{ShardID}] Booting KekBot Shard.");
+            Discord.Logger.Log(LogLevel.Information, $"[{LOGTAG}-{ShardID}] Booting Katsuki Shard.");
             await Discord.ConnectAsync();
         }
     }

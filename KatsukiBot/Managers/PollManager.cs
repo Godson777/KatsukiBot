@@ -1,4 +1,6 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using KatsukiBot.Exceptions;
 using KatsukiBot.Utils;
 using Newtonsoft.Json;
@@ -77,8 +79,16 @@ namespace KatsukiBot.Managers {
                 }
 
                 public PollBuilder AddOption(string Option) {
+                    if (Option == null) return this;
                     Options.Add(Option);
                     Selections.Add(new DiscordSelectComponentOption(Option, Selections.Count.ToString()));
+                    return this;
+                }
+
+                public PollBuilder AddOptions(params string[] Options) {
+                    foreach (var option in Options) {
+                        AddOption(option);
+                    }
                     return this;
                 }
 
@@ -90,6 +100,18 @@ namespace KatsukiBot.Managers {
                 public async Task Build() {
                     BuildChecks();
                     var msg = await Channel.SendMessageAsync(new DiscordMessageBuilder()
+                        .WithContent($":bar_chart: {Title}")
+                        .AddComponents(new DiscordSelectComponent("Poll", "Select an Option.", Selections, false, 1, 1)));
+                    var poll = new Poll(Channel.Id, msg.Id, Title, Options.ToArray(), CompletionTime);
+                    PollManager.Get().RegisterPoll(GuildID, poll);
+                    await poll.Execute();
+                }
+
+                public async Task Build(InteractionContext ctx) {
+                    //Setting channel since we skipped that with slash commands.
+                    Channel = ctx.Channel;
+                    //Skipping BuildChecks as the slash command has already ensured everything else was good.
+                    var msg = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                         .WithContent($":bar_chart: {Title}")
                         .AddComponents(new DiscordSelectComponent("Poll", "Select an Option.", Selections, false, 1, 1)));
                     var poll = new Poll(Channel.Id, msg.Id, Title, Options.ToArray(), CompletionTime);
@@ -117,7 +139,7 @@ namespace KatsukiBot.Managers {
             [JsonProperty("Cast Votes")]
             public Dictionary<ulong, int> UserVotes { get; private set; }
 
-            private CancellationTokenSource Cancel;
+            private CancellationTokenSource CancelSource;
 
             private Poll(ulong chID, ulong mID, string title, string[] options, DateTime ct) {
                 ChannelID = chID;
@@ -127,7 +149,7 @@ namespace KatsukiBot.Managers {
                 Votes = new int[options.Length];
                 CompletionTime = ct;
                 UserVotes = new Dictionary<ulong, int>();
-                Cancel = new CancellationTokenSource();
+                CancelSource = new CancellationTokenSource();
             }
 
             public string CastVote(DiscordUser user, int option) {
@@ -152,7 +174,7 @@ namespace KatsukiBot.Managers {
             public async Task Execute() {
                 var c = CompletionTime.Subtract(DateTime.Now);
                 try {
-                    await Task.Delay(c, Cancel.Token);
+                    await Task.Delay(c, CancelSource.Token);
                 } catch (TaskCanceledException _) {
                     //understandable have a nice day
                 }
@@ -163,7 +185,7 @@ namespace KatsukiBot.Managers {
             }
 
             public void CancelPls() {
-                Cancel.Cancel();
+                CancelSource.Cancel();
             }
 
             private string GetResults() {

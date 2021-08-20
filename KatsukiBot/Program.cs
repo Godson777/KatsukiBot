@@ -13,7 +13,9 @@ namespace KatsukiBot {
     class Program { 
         public static RethinkDB R = RethinkDB.R;
         public static Connection Conn;
-        public static Dictionary<int, Katsuki> Shards { get; private set; }
+        public static Dictionary<int, KatsukiDiscord> DiscordShards { get; private set; }
+        public static KatsukiTwitch Twitch { get; private set; }
+        public static IHost APIHost { get; private set; }
 
 
         static void Main(string[] args) {
@@ -21,16 +23,16 @@ namespace KatsukiBot {
         }
 
         static async Task MainAsync(string[] _) {
-            var host = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(webBuilder => {
+            APIHost = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(webBuilder => {
                 webBuilder.UseStartup<WebStartup>();
                 webBuilder.UseUrls("http://*:6969");
             }).Build();
 
             Console.WriteLine("Katsuki is starting...");
-            Console.WriteLine("[1/4] Loading Config... (Not Really, this was just stolen from KekBot lmao)");
+            Console.WriteLine("[1/5] Loading Config...");
             var config = await Config.Get();
 
-            Console.WriteLine("[2/4] Connecting to RethinkDB...");
+            Console.WriteLine("[2/5] Connecting to RethinkDB...");
             try {
                 Conn = R.Connection().User(config.DbUser, config.DbPass).Connect();
             } catch (Exception e) when (e is ReqlDriverError || e is System.Net.Sockets.SocketException) {
@@ -51,24 +53,28 @@ namespace KatsukiBot {
             Console.WriteLine("[RethinkDB] Connected to Database!");
             VerifyTables();
 
-            Console.WriteLine("[3/4] Creating shards...");
+            Console.WriteLine("[3/5] Creating shards...");
             /* 
              * Realistically, we probably won't even need to shard. But it's basically just future-proofing in case I decide to make Katsuki public,
              * which, let's be real, I really have no intention of doing so.
              * If anything, I'd *maybe* let friends add her to their server. *Maybe.*
              */
-            Shards = new Dictionary<int, Katsuki>();
+            DiscordShards = new Dictionary<int, KatsukiDiscord>();
             for (int i = 0; i < config.Shards; i++) {
-                Shards[i] = new Katsuki(config, i);
+                DiscordShards[i] = new KatsukiDiscord(config, i);
             }
 
-            Console.WriteLine("[4/4] Starting Web API...");
-            await host.StartAsync();
+            Console.WriteLine("[4/5] Starting Web API...");
+            await APIHost.StartAsync();
+
+            Console.WriteLine("[5/5] Starting Twitch...");
+            Twitch = new KatsukiTwitch(config);
+            Twitch.Activate();
 
             Console.WriteLine("Loading Completed! Booting Shards!");
             Console.WriteLine("----------------------------------");
 
-            foreach (var (_, shard) in Shards) {
+            foreach (var (_, shard) in DiscordShards) {
                 await shard.StartAsync();
             }
 
@@ -85,7 +91,7 @@ namespace KatsukiBot {
             }
             if (!R.TableList().Contains("Polls").Run<bool>(Conn)) {
                 Console.WriteLine("[RethinkDB] \"Polls\" table was not found, so it is being made.");
-                R.TableCreate("Polls").OptArg("primary_key", "Guild ID");
+                R.TableCreate("Polls").OptArg("primary_key", "Guild ID").Run(Conn);
             }
             Console.WriteLine("[RethinkDB] Tables verified!");
         }
@@ -98,7 +104,7 @@ namespace KatsukiBot {
         /// <param name="mID">The message ID used to find the message object.</param>
         /// <returns></returns>
         public async static Task<DiscordMessage> FindMessageWithKatsuki(ulong cID, ulong mID) { 
-            foreach (Katsuki Kat in Shards.Values) {
+            foreach (KatsukiDiscord Kat in DiscordShards.Values) {
                 var ch = await Kat.Discord.GetChannelAsync(cID);
                 if (ch == null) continue;
                 var msg = await ch.GetMessageAsync(mID);

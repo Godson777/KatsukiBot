@@ -14,12 +14,18 @@ namespace KatsukiBot.API {
         public IActionResult Get() {
             return Ok("lol");
         }
+        
+        public class Message {
+            public string msg { get; set; }
+        }
 
         [HttpPost("msg")]
         [ApiKey]
-        public async Task<IActionResult> SendMessage([FromHeader] string msg) {
-            var ch = await Program.Shards[0].Discord.GetChannelAsync(866182677690187786);
-            await ch.SendMessageAsync(msg);
+        //use [FromHeader] on a param to get it from the header instead of the url
+        public async Task<IActionResult> SendMessage([FromBody] Message message) {
+            var ch = await Program.DiscordShards[0].Discord.GetChannelAsync(866182677690187786);
+            await ch.SendMessageAsync(message.msg);
+            Program.Twitch.client.SendMessage("GodsonTM", message.msg);
             return Ok("message sent");
         }
     }

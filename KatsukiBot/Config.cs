@@ -17,6 +17,10 @@ namespace KatsukiBot {
         public string DbPass { get; private set; }
         [JsonProperty("shards")]
         public int Shards { get; private set; } = 1;
+        [JsonProperty("Twitch Username")]
+        public string TwitchUsername { get; private set; }
+        [JsonProperty("Twitch Access Token")]
+        public string TwitchAccessToken { get; private set; }
 
         private static Config _instance;
 
