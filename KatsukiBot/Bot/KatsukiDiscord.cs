@@ -2,10 +2,13 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using KatsukiBot.Commands;
 using KatsukiBot.Commands.Discord;
 using KatsukiBot.Managers;
+using KatsukiBot.Utils;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -76,12 +79,37 @@ namespace KatsukiBot {
                 EnableDefaultHelp = false
             });
 
+            Interactivity = Discord.UseInteractivity();
             CommandsNext.RegisterCommands<TestCommands>();
             CommandsNext.CommandErrored += HandleError;
             SlashCommands = Discord.UseSlashCommands();
-            SlashCommands.RegisterCommands<SlashCommands>(441499112899084288l);
-            SlashCommands.RegisterCommands<GeneralCommands>(441499112899084288l);
+            SlashCommands.RegisterCommands<SlashCommands>(441499112899084288L);
+            SlashCommands.RegisterCommands<GeneralCommands>(441499112899084288L);
+            SlashCommands.SlashCommandErrored += HandleError;
             Discord.ComponentInteractionCreated += HandlePoll;
+        }
+        private async Task HandleError(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs errorArgs) {
+            var error = errorArgs.Exception;
+            var ctx = errorArgs.Context;
+            switch (error) {
+                case ArgumentException _: {
+                        // Remove cuz this swallows important errors >:(
+                        break;
+                        //var cmd = CommandsNext.FindCommand($"help {errorArgs.Command.QualifiedName}", out var args);
+                        //var fakectx = CommandsNext.CreateFakeContext(ctx.Member, ctx.Channel, ctx.Message.Content, ctx.Prefix, cmd, args);
+                        //await CommandsNext.ExecuteCommandAsync(fakectx);
+                        //return;
+                    }
+                case SlashExecutionChecksFailedException e when e.FailedChecks.OfType<SlashRequireUserPermissionsAttribute>().Any(): {
+                        var permCheck = e.FailedChecks.OfType<SlashRequireUserPermissionsAttribute>().First();
+                        await ctx.ReplyBasicAsync($"Nya!? Hey there, you don't have the right permissions to do that! Try asking someone with the `{permCheck.Permissions.ToPermissionString()}` permission to do this!", true);
+                        return;
+                    }
+            }
+
+            await ctx.Channel.SendMessageAsync($"An error occured: {error.Message}");
+            ctx.Client.Logger.Log(LogLevel.Error, $"[{LOGTAG}-{ShardID}] User '{ctx.User.Username}#{ctx.User.Discriminator}' ({ctx.User.Id}) tried to execute '{errorArgs.Context.CommandName ?? "UNKNOWN COMMAND?"}' " +
+                $"but failed with {error}");
         }
 
         private async Task HandlePoll(DiscordClient sender, DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs e) {
