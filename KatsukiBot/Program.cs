@@ -17,7 +17,6 @@ namespace KatsukiBot {
         public static KatsukiTwitch Twitch { get; private set; }
         public static IHost APIHost { get; private set; }
 
-
         static void Main(string[] args) {
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -25,7 +24,7 @@ namespace KatsukiBot {
         static async Task MainAsync(string[] _) {
             APIHost = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(webBuilder => {
                 webBuilder.UseStartup<WebStartup>();
-                webBuilder.UseUrls("http://*:6969");
+                webBuilder.UseUrls(HardConfig.APIURL);
             }).Build();
 
             Console.WriteLine("Katsuki is starting...");
@@ -83,6 +82,9 @@ namespace KatsukiBot {
             await Task.Delay(-1);
         }
 
+        /// <summary>
+        /// Just a simple method to go through each required Table that Katsuki requires to function. If one or more tables are missing, they will get created in the database.
+        /// </summary>
         private static void VerifyTables() {
             Console.WriteLine("[RethinkDB] Verifying that all required tables have been created...");
             if (!R.TableList().Contains("Settings").Run<bool>(Conn)) {
@@ -93,6 +95,14 @@ namespace KatsukiBot {
                 Console.WriteLine("[RethinkDB] \"Polls\" table was not found, so it is being made.");
                 R.TableCreate("Polls").OptArg("primary_key", "Guild ID").Run(Conn);
             }
+            if (!R.TableList().Contains("TwitchPhrases").Run<bool>(Conn)) {
+                Console.WriteLine("[RethinkDB] \"TwitchPhrases\" table was not found, so it is being made.");
+                R.TableCreate("TwitchPhrases").OptArg("primary_key", "Channel").Run(Conn);
+            }
+            if (!R.TableList().Contains("Streamers").Run<bool>(Conn)) {
+                Console.WriteLine("[RethinkDB] \"TwitchPhrases\" table was not found, so it is being made.");
+                R.TableCreate("Streamers").OptArg("primary_key", "ApiKey").Run(Conn);
+            }
             Console.WriteLine("[RethinkDB] Tables verified!");
         }
 
@@ -102,8 +112,8 @@ namespace KatsukiBot {
         /// </summary>
         /// <param name="cID">The channel ID in which to find the message.</param>
         /// <param name="mID">The message ID used to find the message object.</param>
-        /// <returns></returns>
-        public async static Task<DiscordMessage> FindMessageWithKatsuki(ulong cID, ulong mID) { 
+        /// <returns>The <see cref="DiscordMessage"/> based on the criteria. Returns <see langword="null"/> if no message found.</returns>
+        public async static Task<DiscordMessage> FindDiscordMessage(ulong cID, ulong mID) { 
             foreach (KatsukiDiscord Kat in DiscordShards.Values) {
                 var ch = await Kat.Discord.GetChannelAsync(cID);
                 if (ch == null) continue;

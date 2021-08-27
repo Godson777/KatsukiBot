@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace KatsukiBot.Commands {
-    class SlashCommands : SlashCommandModule {
+    class SlashCommands : ApplicationCommandModule {
         // The following is the single most gross thing I've ever written for the sake of a slash command.
         [SlashCommand("poll", "Create a poll.")]
         async Task Poll(InteractionContext ctx, 

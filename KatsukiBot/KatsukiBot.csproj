@@ -13,10 +13,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.1" />
+    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-00968" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-00968" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-00968" />
+    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="2.0.1" />
     <PackageReference Include="RethinkDb.Driver" Version="2.4.0-beta-1" />
     <PackageReference Include="TwitchLib" Version="3.2.0" />
   </ItemGroup>

@@ -178,7 +178,7 @@ namespace KatsukiBot.Managers {
                 } catch (TaskCanceledException _) {
                     //understandable have a nice day
                 }
-                var m = await Program.FindMessageWithKatsuki(ChannelID, MessageID);
+                var m = await Program.FindDiscordMessage(ChannelID, MessageID);
                 if (m == null) return;
                 await m.ModifyAsync(new DiscordMessageBuilder().WithContent(GetResults()));
                 PollManager.Get().UnregisterPoll(m.Channel.Guild.Id, this);
