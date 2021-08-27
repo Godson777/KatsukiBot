@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 namespace KatsukiBot.Utils {
     static class Util {
         /// <summary>
+        /// Returns a random element from the collection.
+        /// </summary>
+        internal static T RandomElement<T>(this IEnumerable<T> coll, Randumb? rng = null) =>
+            (rng ?? Randumb.Instance).OneFrom(coll);
+
+        /// <summary>
         /// This only exists for type inference.
         /// </summary>
         [Serializable]
