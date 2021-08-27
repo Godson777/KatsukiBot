@@ -1,6 +1,6 @@
 ﻿using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Converters;
-using KatsukiBot.Commands.Twitch.Handler.EventArgs;
+using KatsukiBot.Commands.Twitch.Handler;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;

@@ -1,9 +1,10 @@
 ﻿using DSharpPlus.CommandsNext.Attributes;
+using Emzi0767.Utilities;
 using KatsukiBot.Commands.Twitch.Handler.Attributes;
 using KatsukiBot.Commands.Twitch.Handler.Converters;
 using KatsukiBot.Commands.Twitch.Handler.Entities;
 using KatsukiBot.Commands.Twitch.Handler.Entities.Builders;
-using KatsukiBot.Commands.Twitch.Handler.EventArgs;
+using KatsukiBot.Commands.Twitch.Handler;
 using KatsukiBot.Commands.Twitch.Handler.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -19,6 +20,9 @@ using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 
 namespace KatsukiBot.Commands.Twitch.Handler {
+    /// <summary>
+    /// This was haphazardly frankensteined together using some of CommandsNext's classes and shit.
+    /// </summary>
     public class TwitchCommandExtension {
         public TwitchClient Client { get; internal set; }
 
@@ -85,9 +89,6 @@ namespace KatsukiBot.Commands.Twitch.Handler {
 
             this.Client = client;
 
-            //this._executed = new AsyncEvent<TwitchCommandExtension, CommandExecutionEventArgs>("COMMAND_EXECUTED", TimeSpan.Zero, this.Client.EventErrorHandler);
-            //this._error = new AsyncEvent<TwitchCommandExtension, CommandErrorEventArgs>("COMMAND_ERRORED", TimeSpan.Zero, this.Client.EventErrorHandler);
-
             if (this.Config.UseDefaultCommandHandler)
                 this.Client.OnMessageReceived += this.HandleCommandsAsync;
             //TODO: LOG SHIT I THINK?
@@ -121,7 +122,7 @@ namespace KatsukiBot.Commands.Twitch.Handler {
             var ctx = this.CreateContext(e.ChatMessage, pfx, cmd, args);
             if (cmd == null) {
                 //TODO: Log error when failing to find a command
-                //await this._error.InvokeAsync(this, new CommandErrorEventArgs { Context = ctx, Exception = new CommandNotFoundException(fname) }).ConfigureAwait(false);
+                this.CommandErrored?.Invoke(this, new TwitchCommandErrorEventArgs { Context = ctx, Exception = new DSharpPlus.CommandsNext.Exceptions.CommandNotFoundException(fname) });
                 return;
             }
 
@@ -227,13 +228,13 @@ namespace KatsukiBot.Commands.Twitch.Handler {
                 var res = await cmd.ExecuteAsync(ctx).ConfigureAwait(false);
 
                 //Dunno if this is necessary for the Twitch side? Needs investigating tbh
-                //if (res.IsSuccessful)
-                //    await this._executed.InvokeAsync(this, new CommandExecutionEventArgs { Context = res.Context }).ConfigureAwait(false);
-                //else
-                //    await this._error.InvokeAsync(this, new CommandErrorEventArgs { Context = res.Context, Exception = res.Exception }).ConfigureAwait(false);
+                if (res.IsSuccessful)
+                    CommandExecuted?.Invoke(this, new TwitchCommandExecutionEventArgs { Context = res.Context });
+                else
+                    CommandErrored?.Invoke(this, new TwitchCommandErrorEventArgs { Context = res.Context, Exception = res.Exception });
             } catch (Exception ex) {
                 //TODO: Error Logging again
-                //await this._error.InvokeAsync(this, new CommandErrorEventArgs { Context = ctx, Exception = ex }).ConfigureAwait(false);
+                CommandErrored?.Invoke(this, new TwitchCommandErrorEventArgs { Context = ctx, Exception = ex });
             } finally {
                 if (ctx.ServiceScopeContext.IsInitialized)
                     ctx.ServiceScopeContext.Dispose();
@@ -244,7 +245,7 @@ namespace KatsukiBot.Commands.Twitch.Handler {
             if (cmd.Parent != null)
                 await this.RunAllChecksAsync(cmd.Parent, ctx).ConfigureAwait(false);
 
-            var fchecks = await cmd.RunChecksAsync(ctx, false).ConfigureAwait(false);
+            var fchecks = await cmd.RunChecksAsync(ctx).ConfigureAwait(false);
             if (fchecks.Any())
                 throw new ChecksFailedException(cmd, ctx, fchecks);
         }
@@ -594,6 +595,24 @@ namespace KatsukiBot.Commands.Twitch.Handler {
                 foreach (var xs in cmd.Aliases)
                     this.TopLevelCommands[xs] = cmd;
         }
+        #endregion
+
+        #region Events
+        /// <summary>
+        /// Triggered whenever a command executes successfully.
+        /// </summary>
+        public event EventHandler<TwitchCommandExecutionEventArgs> CommandExecuted;
+
+        /// <summary>
+        /// Triggered whenever a command throws an exception during execution.
+        /// </summary>
+        public event EventHandler<TwitchCommandErrorEventArgs> CommandErrored;
+
+        private void OnCommandExecuted(TwitchCommandExecutionEventArgs e)
+            => CommandExecuted.Invoke(this, e);
+
+        private void OnCommandErrored(TwitchCommandErrorEventArgs e)
+            => CommandErrored.Invoke(this, e);
         #endregion
     }
 }

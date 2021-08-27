@@ -1,5 +1,5 @@
 ﻿using KatsukiBot.Commands.Twitch.Handler.Attributes;
-using KatsukiBot.Commands.Twitch.Handler.EventArgs;
+using KatsukiBot.Commands.Twitch.Handler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -115,11 +115,11 @@ namespace KatsukiBot.Commands.Twitch.Handler.Entities {
         /// <param name="ctx">Context in which the command is executed.</param>
         /// <param name="help">Whether this check is being executed from help or not. This can be used to probe whether command can be run without setting off certain fail conditions (such as cooldowns).</param>
         /// <returns>Pre-execution checks that fail for given context.</returns>
-        public async Task<IEnumerable<TwitchCheckBaseAttribute>> RunChecksAsync(TwitchCommandContext ctx, bool help) {
+        public async Task<IEnumerable<TwitchCheckBaseAttribute>> RunChecksAsync(TwitchCommandContext ctx) {
             var fchecks = new List<TwitchCheckBaseAttribute>();
             if (this.ExecutionChecks != null && this.ExecutionChecks.Any())
                 foreach (var ec in this.ExecutionChecks)
-                    if (!await ec.ExecuteCheckAsync(ctx, help).ConfigureAwait(false))
+                    if (!await ec.ExecuteCheckAsync(ctx).ConfigureAwait(false))
                         fchecks.Add(ec);
 
             return fchecks;

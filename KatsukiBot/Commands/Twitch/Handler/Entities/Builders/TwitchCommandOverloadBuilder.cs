@@ -1,6 +1,6 @@
 ﻿using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
-using KatsukiBot.Commands.Twitch.Handler.EventArgs;
+using KatsukiBot.Commands.Twitch.Handler;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

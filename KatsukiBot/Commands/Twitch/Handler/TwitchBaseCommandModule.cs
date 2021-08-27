@@ -1,4 +1,4 @@
-﻿using KatsukiBot.Commands.Twitch.Handler.EventArgs;
+﻿using KatsukiBot.Commands.Twitch.Handler;
 using System;
 using System.Collections.Generic;
 using System.Text;

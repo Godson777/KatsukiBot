@@ -1,6 +1,6 @@
 ﻿using KatsukiBot.Commands.Twitch.Handler.Attributes;
 using KatsukiBot.Commands.Twitch.Handler.Entities;
-using KatsukiBot.Commands.Twitch.Handler.EventArgs;
+using KatsukiBot.Commands.Twitch.Handler;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

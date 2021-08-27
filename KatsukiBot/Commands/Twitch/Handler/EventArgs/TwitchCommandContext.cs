@@ -7,7 +7,7 @@ using TwitchLib.Api.V5.Models.Channels;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 
-namespace KatsukiBot.Commands.Twitch.Handler.EventArgs {
+namespace KatsukiBot.Commands.Twitch.Handler {
     public sealed class TwitchCommandContext {
         /// <summary>
         /// Gets the client which received the message.
