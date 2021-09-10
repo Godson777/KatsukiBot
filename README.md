@@ -1,4 +1,4 @@
-<p align="center"><img src="https://godsontm.dev/images/KatsukiBot.png" alt="Katsuki Image"></p>
+<p align="center"><img src="https://godsontm.dev/images/KatsukiBot.png" width=200 alt="Katsuki Image"></p>
 <h1 align="center">Katsuki</h1>
 
 <p align="center"><i>A traveller's perfect companion!</i></p>
