@@ -1,5 +1,5 @@
 <p align="center"><img src="https://godsontm.dev/images/KatsukiBot.png" width=200 alt="Katsuki Image"><br>
-<sup>Credit goes to <a href src="https://twitter.com/hoopyon">@hoopyon<a/> for the art.</sup></p>
+<sup>Credit goes to <a href="https://twitter.com/hoopyon">@hoopyon<a/> for the art.</sup></p>
 <h1 align="center">Katsuki</h1>
 
 <p align="center"><i>A traveller's perfect companion!</i></p>
